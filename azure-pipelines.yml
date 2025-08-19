@@ -1,19 +1,24 @@
+---
 trigger:
-- master
-
+  - master
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
 stages:
-- stage: Build
-  jobs:
-    - job: firstjob
-      steps:
-      - bash: echo Build First Job
-      - bash: echo $(Pipeline.Workspace)
-      - bash: echo $(Build.BuildNumber)
-      - bash: echo $(Build.BuildId)
-      - bash: echo $(Build.SourceBranchName)
-      - bash: echo $(Build.SourcesDirectory)
-      - bash: echo $(System.DefaultWorkingDirectory)
-      - bash: ls -r  $(System.DefaultWorkingDirectory)
-      - bash: echo $(Build.ArtifactStagingDirectory)
+  - stage: Build
+    jobs:
+      - job: firstjob
+        steps:
+          - bash: ls -R $(Build.ArtifactStagingDirectory)
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: $(System.DefaultWorkingDirectory)
+              Contents: |
+                **/*.yml
+                **/*.java
+              TargetFolder: $(Build.ArtifactStagingDirectory)
+          - bash: ls -R $(Build.ArtifactStagingDirectory)
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
